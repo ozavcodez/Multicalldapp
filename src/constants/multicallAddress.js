@@ -1,0 +1,1 @@
+export const multicallAddress = "0xda573E17E4497639F517Bfa42eeBfE9D1d591F28"

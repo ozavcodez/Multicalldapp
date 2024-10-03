@@ -8,69 +8,75 @@ import { Contract } from "ethers";
 import useRunners from "./hooks/useRunners";
 import { Interface } from "ethers";
 import ABI from "./ABI/proposal.json";
+import useFetchProposals from "./hooks/useFetchProposals";
 
-const multicallAbi = [
-    "function tryAggregate(bool requireSuccess, (address target, bytes callData)[] calls) returns ((bool success, bytes returnData)[] returnData)",
-];
+
 
 function App() {
-    const readOnlyProposalContract = useContract(true);
+    const readOnlyProposalContract = useContract();
     const { readOnlyProvider } = useRunners();
-    const [proposals, setProposals] = useState([]);
+    // const [proposals, setProposals] = useState([]);
 
-    const fetchProposals = useCallback(async () => {
-        if (!readOnlyProposalContract) return;
+    const {proposals} = useFetchProposals()
 
-        const multicallContract = new Contract(
-            import.meta.env.VITE_MULTICALL_ADDRESS,
-            multicallAbi,
-            readOnlyProvider
-        );
+    // const fetchProposals = useFetchProposals();
 
-        const itf = new Interface(ABI);
+    console.log("PROPOSALS",proposals)
+    // const fetchProposals = useCallback(async () => {
+    //     if (!readOnlyProposalContract) return;
+    //     const proposalCount = Number(
+    //         await readOnlyProposalContract.proposalCount()
+    //     );
+    //     const multicallContract = new Contract(
+    //         import.meta.env.VITE_MULTICALL_ADDRESS,
+    //         multicallAbi,
+    //         readOnlyProvider
+    //     );
 
-        try {
-            const proposalCount = Number(
-                await readOnlyProposalContract.proposalCount()
-            );
+    //     const itf = new Interface(ABI);
 
-            const proposalsIds = Array.from(
-                { length: proposalCount - 1 },
-                (_, i) => i + 1
-            );
+    //     try {
+            
 
-            const calls = proposalsIds.map((id) => ({
-                target: import.meta.env.VITE_CONTRACT_ADDRESS,
-                callData: itf.encodeFunctionData("proposals", [id]),
-            }));
+    //         const proposalsIds = Array.from(
+    //             { length: proposalCount - 1 },
+    //             (_, i) => i + 1
+    //         );
 
-            const responses = await multicallContract.tryAggregate.staticCall(
-                true,
-                calls
-            );
+    //         const calls = proposalsIds.map((id) => ({
+    //             target: import.meta.env.VITE_CONTRACT_ADDRESS,
+    //             callData: itf.encodeFunctionData("proposals", [id]),
+    //         }));
 
-            const decodedResults = responses.map((res) =>
-                itf.decodeFunctionResult("proposals", res.returnData)
-            );
+    //         console.log("Calls:::",calls)
 
-            const data = decodedResults.map((proposalStruct) => ({
-                description: proposalStruct.description,
-                amount: proposalStruct.amount,
-                minRequiredVote: proposalStruct.minVotesToPass,
-                votecount: proposalStruct.voteCount,
-                deadline: proposalStruct.votingDeadline,
-                executed: proposalStruct.executed,
-            }));
+    //         const responses = await multicallContract.tryAggregate.staticCall(
+    //             true,
+    //             calls
+    //         );
 
-            setProposals(data);
-        } catch (error) {
-            console.log("error fetching proposals: ", error);
-        }
-    }, [readOnlyProposalContract, readOnlyProvider]);
+    //         const decodedResults = responses.map((res) =>
+    //             itf.decodeFunctionResult("proposals", res.returnData)
+    //         );
 
-    useEffect(() => {
-        fetchProposals();
-    }, [fetchProposals]);
+    //         const data = decodedResults.map((proposalStruct) => ({
+    //             description: proposalStruct.description,
+    //             amount: proposalStruct.amount,
+    //             minRequiredVote: proposalStruct.minVotesToPass,
+    //             votecount: proposalStruct.voteCount,
+    //             deadline: proposalStruct.votingDeadline,
+    //             executed: proposalStruct.executed,
+    //         }));
+
+    //         setProposals(data);
+    //     } catch (error) {
+    //         console.log("error fetching proposals: ", error);
+    //     }
+    // }, [readOnlyProposalContract, readOnlyProvider]);
+
+    // useEffect(() => {
+    //     fetchProposals();
+    // }, [fetchProposals]);
 
     return (
         <Layout>
