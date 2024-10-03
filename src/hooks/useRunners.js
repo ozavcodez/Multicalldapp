@@ -14,10 +14,10 @@ const useRunners = () => {
     );
 
     useEffect(() => {
-        // something extracted from the provider to sign a contract
-        if (!provider) return;
+        if (!provider) return setSigner(null);
         provider.getSigner().then((newSigner) => {
-            // if (newSigner === signer) return;
+            if (!signer) return setSigner(newSigner);
+            if (newSigner.address === signer.address) return;
             setSigner(newSigner);
         });
     }, [provider, signer]);
