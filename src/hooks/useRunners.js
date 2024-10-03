@@ -8,17 +8,20 @@ const useRunners = () => {
     const { walletProvider } = useAppKitProvider("eip155");
 
     const provider = useMemo(
-        () => (walletProvider ? new BrowserProvider(walletProvider) : null),
+        // passing provider to ethers wrapper
+        () => (walletProvider ? new BrowserProvider(walletProvider) : null), 
         [walletProvider]
     );
 
     useEffect(() => {
+        // something extracted from the provider to sign a contract
         if (!provider) return;
         provider.getSigner().then((newSigner) => {
-            if (newSigner === signer) return;
+            // if (newSigner === signer) return;
             setSigner(newSigner);
         });
     }, [provider, signer]);
+    // a wrapperaround the node , the wrapper provide all json rpc method
     return { provider, signer, readOnlyProvider: jsonRpcProvider };
 };
 
